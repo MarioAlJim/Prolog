@@ -1,0 +1,7 @@
+%pertenece(X,[]).
+%pertenece(X,[H|_]):- X==H.
+pertenece(X,[X|_]).
+pertenece(X,[_|T]):- pertenece(X,T).
+
+main():- read(X), read(Y), pertenece(X, Y), write("true").
+main():- write("false").

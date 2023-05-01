@@ -1,0 +1,18 @@
+padre(juan, jesus).
+padre(stan, juan).
+padre(dios, stan).
+padre(devil, lore).
+madre(maria, jesus).
+madre(lore, juan).
+madre(espiritu, stan).
+madre(luz, lore).
+
+antepasado(X,Y):- padre(X,Z),padre(Z,Y).
+antepasado(X,Y):- padre(X,Z),padre(Z,U),padre(U,Y).
+antepasado(X,Y):- madre(X,U),madre(U,Y).
+antepasado(X,Y):- madre(X,U),padre(U,Y).
+
+
+
+main():- read(X), read(Y), antepasado(X, Y), write("true").
+main():- write("false").

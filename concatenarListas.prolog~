@@ -1,0 +1,4 @@
+concatenar([],L,L).
+concatenar([H|T], L, [H|R]):- concatenar(T,L,R).
+
+main():- read(X), read(L), concatenar(X, L, R), write(R).

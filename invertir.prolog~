@@ -1,0 +1,14 @@
+invertir(L,R):-invertir(L,[],R).
+invertir([],RN,RN).
+invertir([H|T],LN,R):-invertir(T,RN,R),insertarFinalito(LN,H,RN).
+%invertir([X,Y],Z):- insertarFinalito(Z,X,R),invertir(Y,R).
+%concatenar([],X,X).
+%concatenar(Y,X,[_|T]):-concatenar([],X,T).
+
+insertarFinalito([],X,[X]).
+insertarFinalito([H|T],X,[H|R]):-insertarFinalito(T,X,R).
+
+%concatenar([],L,L).
+%concatenar([H|T], L, [H|R]):- concatenar(T,L,R).
+
+main():-  read(L),  invertir(L, R), write(R).
