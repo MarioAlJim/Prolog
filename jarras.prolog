@@ -1,0 +1,46 @@
+insertarFinal(E,[],[E]).
+insertarFinal(E,[H|T],[H|R]):- insertarFinal(E,T,R).
+pertenece(X,[X|_]).
+pertenece(X,[_|T]):-pertenece(X,T).
+movimientoJ1aJ2(J1,J2, J1N, J2N):- F is 5 - J2, F > 0, J2N is J2+F, J1N is J1-F.
+movimientoJ1aJ2(J1,J2, J1N, J2N):- J1N is J1, J2N is J2.
+movimientoJ1aJ3(J1,J3, J1N, J3N):- F is 3 - J3, F > 0, J3N is J3+F, J1N is J1-F.
+movimientoJ1aJ3(J1,J3, J1, J3).
+movimientoJ2aJ1(J2,J1, J2N, J1N):- J1N is J1+J2, J2N is J2-J2.
+movimientoJ2aJ3(J2,J3, J2N, J3N):- F is 3 - J3, F > 0, F > J2, J3N is J3+J2, J2N is J2-J2.
+movimientoJ2aJ3(J2,J3, J2N, J3N):- F is 3 - J3, F > 0, J3N is J3+F, J2N is J2-F.
+movimientoJ2aJ3(J2,J3, J2, J3).
+movimientoJ3aJ1(J3,J1, J3N, J1N):- J1N is J1+J3, J3N is J3-J3.
+movimientoJ3aJ2(J3,J2, J3N, J2N):- F is 5 - J2, F > 0, F > J3, J2N is J2+J3, J3N is J3-J3.
+movimientoJ3aJ2(J3,J2, J3N, J2N):- F is 5 - J2, F > 0, J2N is J2+F, J3N is J3-F.
+movimientoJ3aJ2(J3,J2, J3, J2).
+
+%generaSucesores(8,_,_,[[3,5,0],[5,0,3]]).
+generaSucesores(_,_,_,R,R):-write(R).
+generaSucesores(J1,J2,J3,R):-J1 == 0,generaSucesores2(J1,J2,J3,R).
+generaSucesores(J1,J2,J3,R):-generaSucesoresJ1(J1,J2,J3,0,[],R),generaSucesores2(J1,J2,J3,R).
+generaSucesores2(J1,J2,J3,R):-J2 == 0,generaSucesores3(J1,J2,J3,R).
+generaSucesores2(J1,J2,J3,R):-generaSucesoresJ2(J1,J2,J3,0,R,RN),generaSucesores3(J1,J2,J3,RN).
+generaSucesores3(_,_,J3,R):-J3 == 0,generaSucesores(_,_,_,R,R).
+generaSucesores3(J1,J2,J3,R):-generaSucesoresJ3(J1,J2,J3,0,R,RN),generaSucesores(_,_,_,RN,R).
+
+generaSucesoresJ1(_,_,_,C,L,L):-C==2.
+generaSucesoresJ1(J1,J2,J3,C,L,R):- C==0, CN is C+1, movimientoJ1aJ2(J1,J2,J1N,J2N),
+    not(pertenece([J1N,J2N,J3],L)), insertarFinal([J1N,J2N,J3],L,LN), generaSucesoresJ1(J1,J2,J3,CN,LN,R),!.
+generaSucesoresJ1(J1,J2,J3,C,L,R):- C==1, CN is C+1, movimientoJ1aJ3(J1,J3,J1N,J3N),
+    not(pertenece([J1N,J2,J3N],L)), insertarFinal([J1N,J2,J3N],L,LN), generaSucesoresJ1(J1,J2,J3,CN,LN,R),!.
+generaSucesoresJ2(_,_,_,C,L,L):-C==2.
+generaSucesoresJ2(J1,J2,J3,C,L,R):- C==0, CN is C+1, movimientoJ2aJ1(J2,J1,J2N,J1N),
+    not(pertenece([J1N,J2N,J3],L)), insertarFinal([J1N,J2N,J3],L,LN) ,generaSucesoresJ2(J1,J2,J3,CN,LN,R),!.
+generaSucesoresJ2(J1,J2,J3,C,L,R):- C==1, CN is C+1, movimientoJ2aJ3(J2,J3,J2N,J3N),
+    not(pertenece([J1,J2N,J3N],L)), insertarFinal([J1,J2N,J3N],L,LN), generaSucesoresJ2(J1,J2,J3,CN,LN,R),!.
+generaSucesoresJ3(_,_,_,C,L,L):-C==2.
+generaSucesoresJ3(J1,J2,J3,C,L,R):- C==0, CN is C+1, movimientoJ3aJ1(J3,J1,J3N,J1N),
+    not(pertenece([J1N,J2,J3N],L)), insertarFinal([J1N,J2,J3N],L,LN), generaSucesoresJ3(J1,J2,J3,CN,LN,R),!.
+generaSucesoresJ3(J1,J2,J3,C,L,R):- C==1, CN is C+1, movimientoJ3aJ2(J3,J2,J3N,J2N),
+    not(pertenece([J1,J2N,J3N],L)), insertarFinal([J1,J2N,J3N],L,LN), generaSucesoresJ3(J1,J2,J3,CN,LN,R),!.
+
+jarras(Sol):- jarras2(8,0,0,[],Sol).
+jarras2(4,_,_,Ruta,Ruta).
+jarras2(J1,J2,J3,Ruta,Sol):- generaSucesores(J1,J2,J3,Suc),concatenar(Suc, Ruta, RutaN) .
+

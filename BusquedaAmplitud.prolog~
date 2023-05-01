@@ -1,0 +1,186 @@
+/* Paso 1:
+   Delimitar base de conocimientos. */
+camino(oradea, sibiu, 151).
+camino(oradea, zerind, 71).
+camino(zerind, arad, 75).
+camino(arad, sibiu, 140).
+camino(arad, timisoara, 118).
+camino(sibiu, fagaras, 99).
+camino(sibiu, rimnicu, 80).
+camino(timisoara, lugoj, 111).
+camino(lugoj, mechadia, 70).
+camino(mechadia, dobreta, 75).
+camino(dobreta, craiova, 120).
+camino(rimnicu, craiova, 146).
+camino(craiova, pitesti, 138).
+camino(fagaras, bucarest, 211).
+camino(pitesti, bucarest, 101).
+camino(bucarest, giurgiu, 90).
+camino(bucarest, urziceni, 85).
+camino(urziceni, hirsova, 98).
+camino(urziceni, vaslui, 142).
+camino(hirsova, eforie, 86).
+camino(vaslui, iasi, 92).
+camino(iasi, neamt, 87).
+
+
+/* Función pertenece. */
+pertenece(X,[X|_]).
+pertenece(X,[_|T]):-pertenece(X,T).
+
+/* Paso 2:
+   Establecer sucesores. */
+sucesor(Estado, Sucesor, Ruta, Costo):-
+camino(Estado, Sucesor, Costo),
+not(pertenece(Sucesor, Ruta)).
+
+sucesor(Estado, Sucesor, Ruta, Costo):-
+camino(Sucesor, Estado, Costo),
+not(pertenece(Sucesor, Ruta)).
+
+/* Las variables Sucesor y Costo no están unificadas; Estado y Ruta están unificadas.
+
+   sucesor(oradea, sucesor, [], costo)
+   estado = oradea, sucesor = [sibiu | zerind],
+   costo = [151 | 71].
+
+   sucesor(sibiu, sucesor, [arad], costo)
+   estado = sibiu, sucesor = [fagaras | rimnicu |
+   oradea | arad], costo = [99 | 80 | 151 | 140]. */
+
+/* Función insertarFinal. */
+insertarFinal(X,[],[X]).
+insertarFinal(X,[H|T],[H|R]):-insertarFinal(X,T,R).
+
+/* Función concatenar. */
+concatenar([],L,L).
+concatenar([X|T],L,[X|C]):-concatenar(T,L,C).
+
+
+/* Paso 3.1:
+   Extender ruta (generar ramas)
+   Recursividad (caso base). */
+extenderRuta(_, _, [], []):-!.
+
+/*
+   extenderRuta(EstadoActual, Ruta, ListaSucesores, Solucion).
+
+   extenderRuta(sibiu, [arad], [oradea, fagaras, rimnicu], Solucion)
+   Solucion no está unificada.
+   Solucion = [[arad, sibiu], [arad, sibiu], [arad, sibiu]]. */
+
+
+/* Paso 3.2:
+   Recursividad (caso recursivo). */
+extenderRuta(EstadoActual, Ruta, [_|Tsucesor], [RutaAuxiliar|Tsolucion]):-
+
+/* Paso 3.2.1:
+   Actualizar el acumulador de ruta de sucesores. */
+insertarFinal(EstadoActual, Ruta, RutaAuxiliar),
+/* Paso 3.2.2:
+   Llamar recursivamente. */
+extenderRuta(EstadoActual, Ruta, Tsucesor, Tsolucion).
+
+
+/* Paso 4.1:
+   Extender costos (generar costos de ramas)
+   Recursividad (caso base). */
+extenderCostos(_, [], []):-!.
+
+/*
+   extenderCostos(CostoEstadoActual, ListaCostosSucesores, Solucion).
+
+   extenderCostos(140, [151, 99, 80], Solucion)
+   Solucion no está unificada.
+   Solucion = [291, 239, 220]]. */
+
+
+/* Paso 4.2:
+ * Recursividad (caso recursivo). */
+extenderCostos(CostoEstadoActual, [HcostoSucesor|TcostoSucesor], [CostoAuxiliar| RestoCosto]):-
+CostoAuxiliar is CostoEstadoActual + HcostoSucesor,
+extenderCostos(CostoEstadoActual, TcostoSucesor, RestoCosto).
+
+
+/* Paso 5
+ * Busqueda en amplitud.
+*/
+amplitud(EstadoInicial, Meta, Solucion):-
+amplitud([EstadoInicial], Meta, [[]], [0], Solucion),!.
+/* Recibe el EstadoInicial, Meta, Rutas, Costos,
+ * Solucion.
+*/
+
+
+/* Paso 5.1
+ * Recursividad (caso base).
+*/
+
+amplitud([Meta|_], Meta, [Hrutas|_], [Hcostos|_], [RutaAuxiliar,Hcostos]):-
+insertarFinal(Meta, Hrutas, RutaAuxiliar).
+
+/* Paso 5.2
+ * Recursividad (caso general).
+*/
+amplitud([Hcola|Tcola], Meta, [Hrutas|Trutas], [Hcostos|Tcostos], Solucion):-
+
+/* Paso 5.2.1
+ * Generar lista de sucesores con bagof.
+*/
+bagof(Sucesor, Costo^sucesor(Hcola, Sucesor, Hrutas, Costo), BagSucesores),
+
+/* Uso del predicado bagof
+ * Buscar pares:
+ * bagof([X,Y], camino(X,Y), Bag)
+ * Buscar variable:
+ * bagof(X, Y^camino(X,Y), Bag).
+ *
+ * Para este ejercicio:
+ * bagof(Sucesor, Costo^sucesor(EstadoActual, Sucesor, [], Costo), Bag).
+*/
+
+
+
+/* Paso 5.2.2
+ * Generar lista de costos con bagof.
+*/
+bagof(Costo, Sucesor^sucesor(Hcola, Sucesor, Hrutas, Costo), BagCostos),
+
+
+/* Paso 5.2.3
+ * Encolar los sucesores del frente de la cola
+ * y desencolar el frente de la cola.
+ *
+ * Se genera una nueva cola sin el frente,
+ * servirá para la próxima recursividad.
+*/
+concatenar(Tcola, BagSucesores, NuevaCola),
+
+/* Paso 5.2.4
+ * Extender rutas, una por cada sucesor.
+*/
+extenderRuta(Hcola, Hrutas, BagSucesores, RutaNuevosSucesores),
+
+/* Paso 5.2.5
+ * NuevasRutas sirve para la próxima recursividad.
+*/
+concatenar(Trutas, RutaNuevosSucesores, NuevasRutas),
+
+/* Paso 5.2.6
+ * Extender rutas, una por cada sucesor.
+*/
+extenderCostos(Hcostos, BagCostos, CostosSucesores),
+
+/* Paso 5.2.7
+ * NuevasRutas sirve para la próxima recursividad.
+*/
+concatenar(Tcostos, CostosSucesores, NuevosCostos),
+
+amplitud(NuevaCola, Meta, NuevasRutas, NuevosCostos, Solucion).
+
+amplitud([_|Tcola], Meta, [_|Trutas], [_|Tcostos], Solucion):-
+amplitud(Tcola, Meta, Trutas, Tcostos, Solucion).
+
+
+
+
